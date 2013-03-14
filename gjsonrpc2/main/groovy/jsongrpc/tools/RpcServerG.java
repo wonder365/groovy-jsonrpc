@@ -2,6 +2,10 @@ package groovy.jsongrpc.tools;
 
 import groovy.jsongrpc.handler.GMapedHandler;
 
+/**
+ * simple NIO JSONRPC server implement based on netty, use it you can
+ * communicate with javaclass or groovyclass
+ */
 public class RpcServerG extends RpcServer {
     public RpcServerG(int port) {
 	super(port);

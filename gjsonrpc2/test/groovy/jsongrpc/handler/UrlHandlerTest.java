@@ -174,6 +174,19 @@ public class UrlHandlerTest {
     }
 
     @Test
+    public void testCallRpccmd() {
+	String[] cmds = new String[] { "rpc.ls", "rpc.ll", "rpc.all",
+		"rpc.recompile" };
+	for (String cmd : cmds) {
+	    RpcRespResult rsp = (RpcRespResult) call(url, newRequst(null, cmd),
+		    RpcRespResult.class);
+	    assertEquals(Constant.VERSION, rsp.jsonrpc);
+	    assertNull(rsp.id);
+	    assertNotNull(rsp.result);
+	}
+    }
+
+    @Test
     public void testCallAutoConvertParameter() {
 	// 1 arg
 	RpcRespResult rsp = (RpcRespResult) call(url,

@@ -13,7 +13,9 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.Delimiters;
 
-
+/**
+ * simple NIO JSONRPC server implement based on netty
+ */
 public class RpcServer {
     private final int port;
     public MapedHandler handler;

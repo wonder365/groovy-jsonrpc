@@ -245,4 +245,23 @@ public class GMapedHandlerTest {
 	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
     }
 
+    @Test
+    public void testCallRpccmd() {
+	String[] cmds = new String[] { "rpc.ls", "rpc.ll", "rpc.all" };
+
+	RpcRespResult rsp = (RpcRespResult) call(
+		url,
+		newRequst(null, "rpc.register", new Object[] { JAVACLASS + "2",
+			url, true }), RpcRespResult.class);
+	assertEquals(Constant.VERSION, rsp.jsonrpc);
+	assertNull(rsp.id);
+	assertNotNull(rsp.result);
+	for (String cmd : cmds) {
+	    rsp = (RpcRespResult) call(url, newRequst(null, cmd),
+		    RpcRespResult.class);
+	    assertEquals(Constant.VERSION, rsp.jsonrpc);
+	    assertNull(rsp.id);
+	    assertNotNull(rsp.result);
+	}
+    }
 }
