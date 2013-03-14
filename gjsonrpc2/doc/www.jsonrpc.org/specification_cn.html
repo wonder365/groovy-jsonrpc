@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+    <TITLE>JSON-RPC 2.0 规范</TITLE>
+    <!-- Le styles -->
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+      .sidebar-nav {
+        padding: 9px 0;
+      }
+    </style>
+    <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="assets/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="assets/ico/apple-touch-icon-57-precomposed.png">
+ 
+  </head>
+    <body>
+      <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+          <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="http://www.jsonrpc.org">JSON-RPC</a>
+            <div class="nav-collapse">
+            <ul class="nav">
+              <li><a href="http://www.jsonrpc.org">Home</a></li>
+            </ul>
+            </div><!--/.nav-collapse -->
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="row-fluid">
+          <div class="span3">
+            <div class="well sidebar-nav">
+              <ul class="nav nav-list">
+                <li class="nav-header">规范</li>
+                <li><a href="specification">2.0</a></li>
+                <li><a href="http://json-rpc.org/wiki/specification">1.0</a></li>
+                <li class="nav-header">更多细节</li>
+                <li><a href="http://www.json.org">什么是JSON?</a> </li>
+                <li><a href="http://en.wikipedia.org/wiki/Remote_procedure_call">什么是RPC?</a></li>
+                <li><a href="http://www.simple-is-better.org/rpc/#differences-between-1-0-and-2-0">1.0 vs. 2.0</a></li>
+                <li><a href="http://en.wikipedia.org/wiki/JSON-RPC#Implementations">实现</a></li>
+                <li><a href="http://groups.google.com/group/json-rpc/">参与讨论</a></li>
+                <li class="nav-header">社交</li>
+                <li>
+<!-- AddThis Button BEGIN -->
+<div class="addthis_toolbox addthis_default_style ">
+<a class="addthis_button_preferred_1"></a>
+<a class="addthis_button_preferred_2"></a>
+<a class="addthis_button_preferred_3"></a>
+<a class="addthis_button_preferred_4"></a>
+<a class="addthis_button_compact"></a>
+<a class="addthis_counter addthis_bubble_style"></a>
+</div>
+<!-- AddThis Button END -->
+ </li>
+              </ul>
+            </div><!--/.well -->
+          </div><!--/span-->
+          <div class="span9">
+            <div class="page-header">
+              <h1>JSON-RPC 2.0 规范</h1>
+            </div>
+            
+            <div>
+               <div>
+                  <dl><dt>起草:</dt> <dd>2010-03-26 (基于2009-05-24版本)</dd></dl>
+                </div>
+
+                <div>
+                  <dl><dt>更新:</dt> <dd>2013-01-04</dd></dl>
+                </div>
+
+                <div>
+                  <dl><dt>作者:</dt> <dd><a href="https://groups.google.com/forum/#!forum/json-rpc">JSON-RPC 工作组</a> &lt;json-rpc@googlegroups.com&gt;</dd></dl>
+                </div>
+            </div>
+            <br />
+            <div class="well">
+              <b>目录</b>
+              <ol>
+                <li><a href="#overview">概述</a></li>
+                <li><a href="#conventions">惯例</a></li>
+                <li><a href="#compatibility">兼容性</a></li>
+                <li><a href="#request_object">请求对象</a>
+                  <ol>
+                    <li><a href="#notification">通知</a></li>
+                    <li><a href="#parameter_structures">参数结构</a></li>
+                  </ol>
+                </li>
+                <li><a href="#response_object">响应对象</a>
+                  <ol>
+                    <li><a href="#error_object">错误对象</a></li>
+                  </ol>
+                </li>
+                <li><a href="#batch">批量处理</a></li>
+                <li><a href="#examples">样例</a></li>
+                <li><a href="#extensions">扩展</a></li>
+              </ol>
+            </div>
+
+            <div>
+              <h2 id="overview">1 概述</h2>
+              <p>JSON-RPC 是一个轻量级无状态远程过程调用（RPC）协议。这个规范主要定义了数据结构和处理相关的规则。该协议是传输无关的，可以用于诸如进程内、基于插口（socket）、基于http等消息传递环境。它使用<a href="http://www.json.org">JSON</a> (<a href="http://www.ietf.org/rfc/rfc4627.txt">RFC 4627</a>)作为数据格式。</p>
+              <p>它被设计的尽量简扑！</p>
+            </div>
+
+            <div>
+              <h2 id="conventions">2 惯例</h2>
+	      <p>本文档内的关键字 <strong>必须</strong>, <strong>禁止</strong>, <strong>必要</strong>, <strong>将</strong>, <strong>不得</strong>, <strong>应该</strong>, <strong>不应该</strong>, <strong>可</strong>, <strong>可选</strong> 例同于<a href="http://www.ietf.org/rfc/rfc2119.txt">RFC 2119</a>。</p>
+              <p>因为 JSON-RPC 利用 JSON，所以它具有同样的类型系统（见<a href="http://www.json.org">http://www.json.org</a>或<a href="http://www.ietf.org/rfc/rfc4627.txt">RFC 4627</a>）。JSON 能够表示四种原始类型（Strings, Numbers, Booleans, 和 Null）和两种结构类型（对象和数组）。在本规范中，术语"原始"代指四种JSON原始类型。术语"结构"代指任一JSON结构类型。文中提到JSON类型时，首字母均大写：Object, Array, String, Number, Boolean, Null。True 和 False 也同样被大写。</p>
+              <p>客户与服务交换过程中，成员名称应当被视为大小写相关的。术语函数、方法、过程被同等对待。</p>
+	      <p>客户：请求对象的发起者，响应对象的处理者。<br>服务：响应对象的源头，请求对象处理者。</p>
+	      <p>本规范的实现必须轻易的满足这些角色，不论同时处理多个客户或者一个客户。本规范不涉及复杂性层面。</p>
+            </div>
+
+            <div>
+              <h2 id="compatibility">3 兼容性</h2>
+	      <p>JSON-RPC 2.0 的请求对象和响应对象可能不工作于已有的 JSON-RPC 1.0 客户和服务。可是区分这两个版本很容易：2.0总是包含一个值为"2.0"的"jsonrpc"成员"而1.0则没有。大多数2.0实现应该尝试着处理1.0的对象，即使对端不是对等版本或暗示为1.0版本。</p>
+            </div>
+
+            <div>
+              <h2 id="request_object">4 请求对象</h2>
+	      <p>一次rpc呼叫由发送请求对象给服务来进行表述。请求对象包含以下成员：</p>
+              <dl>
+                <dt>jsonrpc</dt>
+		<dd>表示 JSON-RPC 协议版本的字符串。<strong>必须</strong>为"2.0"。</dd>
+              </dl>
+              <dl>
+                <dt>method</dt>
+		<dd>容纳调用方法名称的字符串。以rpc打头，紧跟句号（U+002E或ASCII46）的方法名称为rpc内部方法或扩展所保留，<strong>禁止</strong>用于其它用途。</dd>
+              </dl>
+              <dl>
+                <dt>params</dt>
+		<dd>持有方法调用过程中被用到的参数值的结构。这个成员<strong>可</strong>被忽略。</dd>
+              </dl>
+              <dl>
+                <dt>id</dt>
+		<dd>由客户生成的标识符，如果有该成员，<strong>必须</strong>为 String、Number 或 Null。如果没有，则可假定为是一个通知。通常情况下该值<strong>应该</strong>不是Null<a href="#id1">[1]</a>，并且为Number时<strong>不应该</strong>包含小数部分。<a href="#id2">[2]</a></dd>
+              </dl>
+	      <p>服务<strong>必须</strong>在响应对象中返回相同的值（如果有）。这个成员用来关联两个对象之间的上下文。</p>
+	      <p><a name="id1" style="padding-top: 40px">[1]</a> 不建议使用Null作为id，因为在本规范中将带有未知id的响应视为Null值。并且，在 JSON-RPC 1.0 中将id为Null的情况定义为通知，这会引起处理混乱。</p>
+	      <p><a name="id2" style="padding-top: 40px">[2]</a> 小数部分可能是由问题的，因为十进制小数不能像二进制小数那样精确表现。</p>
+            </div>
+
+            <div>
+              <h3 id="notification">4.1 通知</h3>
+	      <p>通知是没有id成员的请求对象。通知意味着客户对响应对象不感兴趣，因此不需要返回响应对象给客户。<strong>禁止</strong>服务回应通知，包括批量请求中的通知。</p>
+	      <p>根据定义，因为没有响应的返回对象，所以通知是不可被确认的。这样，客户不必理会通知引起的任何错误（诸如："参数错误", "内部错误"）。</p>
+            </div>
+
+            <div>
+              <h3 id="parameter_structures">4.2 参数结构</h3>
+	      <p>如果出现rpc调用的参数，该参数<strong>必须</strong>以结构的形式提供。顺序参数（数组）或名/值对参数（对象），两者任选其一。</p>
+              <ul>
+		      <li>按位置: 参数<strong>必须</strong>为数组，包含符合服务期望顺序的值。</li>
+		      <li>按名称: 参数<strong>必须</strong>为对象，成员名称匹配服务期望的参数名称。缺少预期的名称<strong>可</strong>能会引发错误结果。名称与函数期望的参数<strong>必须</strong>精确匹配（包括大小写）</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 id="response_object">5 响应对象</h2>
+	      <p>当rpc调用被触发时，服务<strong>必须</strong>返回一个响应（通知例外）。响应以JSON对象的形式表达，包含如下成员：</p>
+              <dl>
+                <dt>jsonrpc</dt>
+		<dd>表示 JSON-RPC 协议版本的字符串。<strong>必须</strong>为"2.0"。</dd>
+              </dl>
+              <dl>
+                <dt>result</dt>
+		<dd>成功时该成员<strong>必要</strong>。<br>
+		当函数调用发生错误时<strong>禁止</strong>出现该成员。<br>
+		该成员的值由在服务上调用的函数确定。</dd>
+              </dl>
+              <dl>
+                <dt>error</dt>
+		<dd>错误时该成员<strong>必要</strong>。<br>
+		在调用过程中未触发错误时<strong>禁止</strong>该成员出现。<br>
+		该成员的值必须为5.1节所定义的对象。</dd>
+              </dl>
+              <dl>
+                <dt>id</dt>
+		<dd><strong>必要</strong>成员。<br>
+		<strong>必须</strong>与请求对象中的id成员值相同。<br>
+		从请求对象侦测id错误时（如：解析错误或无效的请求），<strong>必须</strong>为Null。</dd>
+              </dl>
+	      <p><strong>必须</strong>只包含result成员、error成员其中之一，<strong>禁止</strong>同时包含两者。</p>
+            </div>
+
+            <div>
+              <h3 id="error_object">5.1 错误对象</h3>
+	      <p>当rpc调用遇到错误是，响应对象<strong>必须</strong>包含error成员，该成员为一个对象，包含如下成员：</p>
+
+              <dl>
+                <dt>code</dt>
+		<dd>标识所发生错误类型的数值。<br>
+		<strong>必须</strong>为integer。</dd>
+                <dt>message</dt>
+		<dd>提供错误简短描述的字符串。<br>
+		message<strong>应该</strong>限制为简明的单个句子。</dd>
+                <dt>data</dt>
+		<dd>一个原始或结构值，包含关于错误的额外的信息。<br>
+		<strong>可</strong>被忽略。<br>
+		这个成员的值由服务定义（例如：错误的详细信息，嵌套错误等）。</dd>
+              </dl>
+
+	      <p>从-32768到-32000（含）为预定义的保留错误码。该范围内所有代码，除了在下面明确定义的，保留供以后使用。错误代码与以下网址提供的XML-RPC的代码相近。<a href="http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php">http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php</a></p>
+
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>代码</th>
+                   <th>消息</th>
+                   <th>含义</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>-32700</td>
+                    <td>解析错误</td>
+		    <td>服务接收到无效JSON。<br>在服务解析JSON文本时发生错误。</td>
+                  </tr>
+                  <tr>
+                    <td>-32600</td>
+                    <td>无效请求</td>
+		    <td>发送的JSON不是一个有效的请求对象。</td>
+                  </tr>
+                  <tr>
+                    <td>-32601</td>
+                    <td>方法未找到</td>
+		    <td>方法不存在或不可用。</td>
+                  </tr>
+                  <tr>
+                    <td>-32602</td>
+                    <td>无效参数</td>
+                    <td>无效的方法参数。</td>
+                  </tr>
+                  <tr>
+                    <td>-32603</td>
+                    <td>内部错误</td>
+                    <td>JSON-RPC内部错误。</td>
+                  </tr>
+                  <tr>
+                    <td>-32000 to -32099</td>
+                    <td>服务错误</td>
+		    <td>为具体实现保留的预定义的服务错误。</td>
+                  </tr>
+                </tbody>
+              </table>
+	      <p>其余代码可用于应用定义错误。</p>
+            </div>
+
+            <div>
+              <h2 id="batch">6 批量处理</h2>
+	      <p>客户<strong>可</strong>发送请求对象数组来同时发送多个请求对象。</p>
+	      <p>在所有批量请求对象处理结束，服务应该回应对应响应对象的数组。每个请求对象<strong>应</strong>有一个响应对象，除了那些<strong>不应</strong>有响应对象的通知。服务<strong>可</strong>按异步任务的方式处理批rpc呼叫，以任何顺序和任意并行度来处理它们。</p>
+	      <p>响应对象数组内的对象<strong>可</strong>按任何顺序。客户<strong>应</strong>以每个对象的id成员来匹配请求及回应的对象的上下文。</p>
+	      <p>如果批rpc自身失败，无法识别有效的JSON或请求数组内无值（空数组），服务的响应<strong>必须</strong>为单个响应对象。如果响应数组中没有需要被发送到客户的对象，服务<strong>禁止</strong>返回空数组而应当不返回。</p>
+            </div>
+
+            <div>
+              <h2 id="examples">7 样例</h2>
+              <div>
+                <p>语法：</p>
+                <pre>--&gt; 发送给服务的数据<br>&lt;-- 发送给客户的数据</pre>
+              </div>
+             
+              <div>
+               <p>带有位置参数的rpc呼叫：</p>
+               <pre>--&gt; {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}<br>&lt;-- {"jsonrpc": "2.0", "result": 19, "id": 1}<br><br>--&gt; {"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2}
+&lt;-- {"jsonrpc": "2.0", "result": -19, "id": 2}</pre>
+              </div>
+             
+              <div>
+                <p>带有名称参数的rpc呼叫：</p>
+                <pre>--&gt; {"jsonrpc": "2.0", "method": "subtract", "params": {"subtrahend": 23, "minuend": 42}, "id": 3}
+&lt;-- {"jsonrpc": "2.0", "result": 19, "id": 3}
+
+--&gt; {"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4}
+&lt;-- {"jsonrpc": "2.0", "result": 19, "id": 4}</pre>
+              </div>
+             
+              <div>
+                <p>通知：</p>
+                <pre>--&gt; {"jsonrpc": "2.0", "method": "update", "params": [1,2,3,4,5]}<br>--&gt; {"jsonrpc": "2.0", "method": "foobar"}</pre>
+              </div>
+             
+              <div>
+                <p>调用不存在方法的rpc呼叫：</p>
+                <pre>--&gt; {"jsonrpc": "2.0", "method": "foobar", "id": "1"}<br>&lt;-- {"jsonrpc": "2.0", "error": {"code": -32601, "message": "方法未找到"}, "id": "1"}</pre>
+              </div>
+             
+              <div>
+                <p>带有无效JSON的rpc呼叫：</p>
+                <pre>--&gt; {"jsonrpc": "2.0", "method": "foobar, "params": "bar", "baz]<br>&lt;-- {"jsonrpc": "2.0", "error": {"code": -32700, "message": "解析错误"}, "id": null}</pre>
+              </div>
+             
+              <div>
+                <p>带有无效请求对象的rpc呼叫：</p>
+                <pre>--&gt; {"jsonrpc": "2.0", "method": 1, "params": "bar"}<br>&lt;-- {"jsonrpc": "2.0", "error": {"code": -32600, "message": "无效请求"}, "id": null}</pre>
+              </div>
+
+              <div>
+                <p>批量rpc呼叫，无效JSON：</p>
+                <pre>--&gt; [
+  {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"},
+  {"jsonrpc": "2.0", "method"
+]
+&lt;-- {"jsonrpc": "2.0", "error": {"code": -32700, "message": "解析错误"}, "id": null}</pre>
+              </div>
+              
+              <div>
+		      <p>带有空数组的rpc呼叫：</p><pre>--&gt; []
+&lt;--&nbsp;{"jsonrpc": "2.0", "error": {"code": -32600, "message": "无效请求"}, "id": null}</pre>
+              </div>
+
+	      <div><p>无效批量rpc呼叫（但是不为空）：</p><pre>--&gt; [1]<br>&lt;-- [
+  {"jsonrpc": "2.0", "error": {"code": -32600, "message": "无效请求"}, "id": null}
+]</pre>
+              </div>
+              
+              <div>
+                <p>无效的批量处理：</p>
+                <pre>--&gt; [1,2,3]<br>&lt;-- [
+  {"jsonrpc": "2.0", "error": {"code": -32600, "message": "无效请求"}, "id": null},
+  {"jsonrpc": "2.0", "error": {"code": -32600, "message": "无效请求"}, "id": null},
+  {"jsonrpc": "2.0", "error": {"code": -32600, "message": "无效请求"}, "id": null}
+]</pre>
+              </div>
+              
+              <div>
+                <p>批量处理：</p>
+                <pre>--&gt; [<br>        {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"},<br>        {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},<br>        {"jsonrpc": "2.0", "method": "subtract", "params": [42,23], "id": "2"},<br>        {"foo": "boo"},<br>        {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"}, "id": "5"},<br>        {"jsonrpc": "2.0", "method": "get_data", "id": "9"} <br>    ]<br>&lt;-- [<br>        {"jsonrpc": "2.0", "result": 7, "id": "1"},<br>        {"jsonrpc": "2.0", "result": 19, "id": "2"},<br>        {"jsonrpc": "2.0", "error": {"code": -32600, "message": "无效请求"}, "id": null},<br>        {"jsonrpc": "2.0", "error": {"code": -32601, "message": "方法未找到"}, "id": "5"},<br>        {"jsonrpc": "2.0", "result": ["hello", 5], "id": "9"}<br>    ]</pre>
+              </div>
+              
+              <div>
+                <p>批量处理（全部为通知）：</p>
+                <pre>--&gt; [<br>        {"jsonrpc": "2.0", "method": "notify_sum", "params": [1,2,4]},<br>        {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}<br>    ]<br>&lt;-- //全部为通知的批量处理无返回</pre>
+              </div>
+            </div>
+            <div>
+              <h2 id="extensions">8 扩展</h2>
+	      <p>以 rpc. 开始的方法名保留供系统扩展用，<strong>禁止</strong>为它用。所有系统扩展在相关规范中定义。所有系统扩展是<strong>可选</strong>的。</p>
+              <hr>
+              <p>Copyright (C) 2007-2010 by the JSON-RPC Working Group</p>
+              <p>This document and translations of it may be used to implement JSON-RPC, it may be copied and furnished to others, and derivative works that comment on or otherwise explain it or assist in its implementation may be prepared, copied, published and distributed, in whole or in part, without restriction of any kind, provided that the above copyright notice and this paragraph are included on all such copies and derivative works. However, this document itself may not bemodified in any way.</p>
+              <p>The limited permissions granted above are perpetual and will not be revoked.</p>
+              <p>This document and the information contained herein is provided "AS IS" and ALL WARRANTIES, EXPRESS OR IMPLIED are DISCLAIMED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.</p>
+            </div>
+          </div><!--/span-->
+        </div><!--/row-->
+        <hr>
+        <footer>
+          <div class="footer">Site by <a href="http://www.linkedin.com/in/matthewpetercharlesmorley">Matt Morley</a> of <a href="http://www.mpcm.com">MPCM Technologies LLC</a>, a manager of the <a href="http://groups.google.com/group/json-rpc">JSON-RPC google group</a>.</div>
+        </footer>
+      </div><!--/.fluid-container-->
+    </body>
+  </html>
