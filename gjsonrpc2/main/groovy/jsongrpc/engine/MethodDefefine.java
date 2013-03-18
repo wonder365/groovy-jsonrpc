@@ -23,14 +23,15 @@ public class MethodDefefine implements JSONAware {
      */
     public int parcount;
 
-    public boolean isSingleParPrimitive;
+    public boolean isSingleParConvertable;
 
     public MethodDefefine(Method method) {
 	super();
 	this.method = method;
 	Class<?>[] pts = method.getParameterTypes();
 	this.parcount = pts.length;
-	this.isSingleParPrimitive = (pts.length == 1) && (pts[0].isPrimitive());
+	this.isSingleParConvertable = (pts.length == 1)
+		&& (pts[0].isPrimitive() || pts[0].equals(String.class));
     }
 
     /**
@@ -78,7 +79,7 @@ public class MethodDefefine implements JSONAware {
 	    // info: simply cast list to Array, then invoked by function
 	    if ((params instanceof List)
 		    && (this.parcount == ((List<?>) params).size())
-		    && ((this.isSingleParPrimitive) || (this.parcount > 1))) {
+		    && ((this.isSingleParConvertable) || (this.parcount > 1))) {
 		ret = this.method.invoke(null, ((List<?>) params).toArray());
 	    } else {
 		ret = this.method.invoke(null, params);
