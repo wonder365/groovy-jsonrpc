@@ -10,13 +10,13 @@ import java.io.IOException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * the GroovyServlet supports JSONRPC, when requst.ContentType contains "json",
@@ -35,7 +35,7 @@ public class RpcServlet extends GroovyServlet {
     public void service(HttpServletRequest request, HttpServletResponse response)
 	    throws IOException {
 	String ctxtype = request.getContentType();
-	if (ctxtype.contains("json")) {
+	if (ctxtype != null && ctxtype.contains("json")) {
 	    serviceRpc(request, response);
 	} else {
 	    super.service(request, response);
@@ -50,13 +50,35 @@ public class RpcServlet extends GroovyServlet {
 	byte[] resdata = hl.call(url, reqdata);
 	if (resdata != null) {
 	    response.setContentType("application/json; charset=utf8");
-	    response.getOutputStream().write(resdata);
+	    ServletOutputStream stream = response.getOutputStream();
+	    stream.write(resdata);
 	}
     }
 
     @Override
     public void init(ServletConfig config) throws ServletException {
 	super.init(config);
+	String value = config.getInitParameter("initbase");
+	initbase(value);
+    }
+
+    /**
+     * initialize some groovy scripts( example: utility class, constants,
+     * database or other resource), if script can run, then run it
+     * 
+     * @param val
+     *            paths split by ';', these path will be converted by
+     *            servletContext.getRealPath
+     */
+    public void initbase(String val) {
+	if (val != null) {
+	    String[] pats = val.split(";");
+	    String[] realpats = new String[pats.length];
+	    for (int i = 0, sz = pats.length; i < sz; i++) {
+		realpats[i] = servletContext.getRealPath(pats[i]);
+	    }
+	    this.hl.initbase(realpats);
+	}
     }
 
     @Override

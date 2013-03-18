@@ -1,7 +1,12 @@
 package groovy.jsongrpc.util;
 
-import groovy.lang.GroovyClassLoader;
+import java.io.File;
+import java.io.IOException;
 
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.Script;
+
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
@@ -32,4 +37,33 @@ public class GroovyLoaders {
 	return createGroovyClassLoader(null, imps);
     }
 
+    public static void _initbase(GroovyClassLoader cl, final String url) {
+	try {
+	    Class<?> clazz = cl.parseClass(new File(url));
+	    if (Script.class.isAssignableFrom(clazz)) {
+		// treat it just like a script if it is one
+		Script script = null;
+		try {
+		    script = (Script) clazz.newInstance();
+		} catch (InstantiationException e) {
+		    // ignore instantiation errors,, try to do main
+		} catch (IllegalAccessException e) {
+		    // ignore instantiation errors, try to do main
+		}
+		if (script != null) {
+		    script.run();
+		}
+	    }
+	} catch (CompilationFailedException e) {
+	    throw new IllegalStateException(e);
+	} catch (IOException e) {
+	    throw new IllegalStateException(e);
+	}
+    }
+
+    public static void initbase(GroovyClassLoader cl, final String... urls) {
+	for (String s : urls) {
+	    _initbase(cl, s);
+	}
+    }
 }
