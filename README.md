@@ -5,13 +5,15 @@ jsonrpc2.0 implementation of java and groovy, simply expose the public static me
 **note:** it use [FastJSON] (http://code.alibabatech.com/wiki/display/FastJSON/Home) as JSON-processor
 
 # features
-* easy: no annotation¡¢other
+* easy: no annotation, interface ...
+* light-weight: minimal depends on fastjson.jar and slf4j.jar 
 * JSONRPC 2.0 
 * dynamic load groovy scripts
 * and has a "MapedHandler" dosn't depends on groovy.jar
 * auto convert "params" of JSONRPC from list to array( "params":[1,2] fits int add(int a, int b) )
+* support initialize some resource scripts( as utility, constants, acquire resource ...)
 
-## groovy.jsongrpc.handler.UrlHandler
+## groovy.jsonrpc.handler.UrlHandler
 
 handler supports loading GROOVY through JSONRPC by file URL, when call a method, must pass the real file path, the "method" field in JSONRPC would be the method name exactly in the GROOVY class
 
@@ -19,6 +21,7 @@ handler supports loading GROOVY through JSONRPC by file URL, when call a method,
 
 ``` java
 UrlHandler handler = new UrlHandler();
+handler.initbase("test/startdb.groovy", "test/contants.groovy");
 String url = "test/test.groovy";
 String req = "{"jsonrpc":"2.0","id":null,"method":"add","params":[1,2]}";
 String rsp = handler.call(url, req);
@@ -42,7 +45,7 @@ byte[] rsp = handler.call(url, byte[]data)
 <{"jsonrpc":"2.0","id":null,"result":true}
 ```
 
-## groovy.jsongrpc.handler.GMapedHandler
+## groovy.jsonrpc.handler.GMapedHandler
 
 handler supports GROOVY class and Java class, these class will mapped to a "virtual class", so when call from JSONRPC, the method field will be "class.method", for example: register "java.lang.Math" to "my.math.", then you can call Math.abs by method "my.math.bas"; register "test/test.groovy" to "my.testg.", then call "my.testg.methodname" to invoke methods in test.groovy
 ### Example
@@ -65,12 +68,12 @@ String rsp = handler.call(req);
 >{"jsonrpc":"2.0","id":null,"method":"rpc.register","params":["groovyclass.2","test/test.groovy",true]}
 <{"jsonrpc":"2.0","id":null,"result":true}
 ```
-## groovy.jsongrpc.tools.RpcServlet
+## groovy.jsonrpc.tools.RpcServlet
 
 the GroovyServlet supports JSONRPC, when requst.ContentType contains "json", it will automatically call as a JSONRPC 
 **Warning** the RpcServlet only supports UTF-8 encoding 
 
-## groovy.jsongrpc.tools.RpcServerG
+## groovy.jsonrpc.tools.RpcServerG
 
 simple NIO JSONRPC server implement based on netty, use it you can communicate with javaclass or groovyclass
 
