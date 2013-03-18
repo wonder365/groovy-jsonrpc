@@ -63,6 +63,16 @@ public class UrlHandler {
 	return ret != null ? JSON.toJSONString(ret) : Constant.EMPTY_STRING;
     }
 
+    /**
+     * initialize some groovy scripts( example: utility class, constants,
+     * database or other resource), if script can run, then run it
+     * 
+     * @param urls
+     */
+    public void initbase(final String... urls) {
+	GroovyLoaders.initbase(this.cl, urls);
+    }
+
     class UrlJsonRpcCaller extends AbstractCaller {
 
 	@SuppressWarnings("unused")

@@ -8,7 +8,6 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * handler supports GROOVY class and Java class, these class will mapped to a
  * "virtual class", so when call from JSONRPC, the method field will be
@@ -46,4 +45,13 @@ public class GMapedHandler extends MapedHandler {
 	}
     }
 
+    /**
+     * initialize some groovy scripts( example: utility class, constants,
+     * database or other resource), if script can run, then run it
+     * 
+     * @param urls
+     */
+    public void initbase(final String... urls) {
+	GroovyLoaders.initbase(this.gcl, urls);
+    }
 }
