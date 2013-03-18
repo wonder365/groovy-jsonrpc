@@ -4,6 +4,8 @@ groovy-jsonrpc
 jsonrpc2.0 implementation of java and groovy, simply expose the public static method of java class or groovy script
 **note:** it use [FastJSON] (http://code.alibabatech.com/wiki/display/FastJSON/Home) as JSON-processor
 
+# [download] (gjsonrpc2/files/groovy-jsonrpc.jar)
+
 # features
 * easy: no annotation, interface ...
 * light-weight: minimal depends on fastjson.jar and slf4j.jar 
