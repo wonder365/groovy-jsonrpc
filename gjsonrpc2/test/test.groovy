@@ -8,6 +8,9 @@ static fun1arg(int a){
     return a+1
 }
 
+static fun1argstr(String a){
+    a.reverse()
+}
 
 static int subtract(int a, int b){
     a-b

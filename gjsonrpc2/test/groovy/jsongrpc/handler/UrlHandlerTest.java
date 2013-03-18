@@ -196,6 +196,11 @@ public class UrlHandlerTest {
 	rsp = (RpcRespResult) call(url, newRequst(null, "fun1arg", 1),
 		RpcRespResult.class);
 	assertEquals(2, rsp.result);
+	// 1 arg String
+	rsp = (RpcRespResult) call(url,
+		newRequst(null, "fun1argstr", new String[] { "abc" }),
+		RpcRespResult.class);
+	assertEquals("cba", rsp.result);
 	// 2 args
 	rsp = (RpcRespResult) call(url,
 		newRequst(null, "add", new int[] { 1, 2 }), RpcRespResult.class);
@@ -273,5 +278,19 @@ public class UrlHandlerTest {
 	rsp = rspes.get(0);
 	assertNull(rsp.id);
 	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+	// jsonrpc miss
+	rsp = (RpcErrorWithData) call(url, "{}", RpcErrorWithData.class);
+	assertNull(rsp.id);
+	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+	// method miss
+	rsp = (RpcErrorWithData) call(url, "{jsonrpc:'2.0'}",
+		RpcErrorWithData.class);
+	assertNull(rsp.id);
+	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+    }
+
+    @Test
+    public void testRegister() {
+	handler.initbase("test/testbase.groovy", "test/testsub.groovy");
     }
 }

@@ -6,7 +6,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-
 public class jetty {
 
     public jetty() {
@@ -20,7 +19,9 @@ public class jetty {
     public static void main(String[] args) throws Exception {
 	Server server = new Server(8080);
 	WebAppContext context = new WebAppContext(".", "/");
-	context.addServlet(new ServletHolder(new RpcServlet()), "*.groovy");
+	ServletHolder holder = new ServletHolder(new RpcServlet());
+	holder.setInitParameter("initbase", "test/testbase.groovy;test/testsub.groovy");
+	context.addServlet(holder, "*.groovy");
 	server.setHandler(context);
 	server.start();
 	server.join();
