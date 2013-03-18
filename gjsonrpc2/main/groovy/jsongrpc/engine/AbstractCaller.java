@@ -91,20 +91,17 @@ public abstract class AbstractCaller {
      */
     private RpcResponse callone(JSONObject jo) {
 	Object id = jo.get(Constant.FIELD_ID);
+	RpcResponse respchk = checkone(jo, id);
+	if (respchk != null) {
+	    return respchk;
+	}
 	boolean isnotify = !jo.containsKey(Constant.FIELD_ID);
 	RpcResponse resp = callone(jo, id);
-	logger.info("req {} rsp {}", jo, resp);
+
 	return isnotify ? null : resp;
     }
 
-    /**
-     * call one request object, but not check if it is a notify or not
-     * 
-     * @param jo
-     * @param id
-     * @return response object ( notify will return a response too )
-     */
-    private RpcResponse callone(JSONObject jo, Object id) {
+    private RpcResponse checkone(JSONObject jo, Object id) {
 	// check 1: jsonrpc
 	if (!jo.containsKey(Constant.FIELD_JSONRPC)) {
 	    return RpcResponse.newError(id, Constant.EC_INVALID_REQUEST,
@@ -127,6 +124,18 @@ public abstract class AbstractCaller {
 	    return RpcResponse.newError(id, Constant.EC_INVALID_REQUEST,
 		    Constant.MSG_INVALID_REQUEST + "method field empty");
 	}
+	return null;
+    }
+
+    /**
+     * call one request object, but not check if it is a notify or not
+     * 
+     * @param jo
+     * @param id
+     * @return response object ( notify will return a response too )
+     */
+    private RpcResponse callone(JSONObject jo, Object id) {
+	String methodname = jo.getString(Constant.FIELD_METHOD);
 
 	if (methodname.startsWith("rpc.")) {
 	    return _callrpc(methodname, id, jo);
