@@ -1,4 +1,4 @@
-package groovy.jsongrpc.util;
+package groovy.jsonrpc.util;
 
 import java.io.File;
 import java.io.IOException;

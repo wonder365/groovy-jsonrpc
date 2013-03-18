@@ -1,4 +1,4 @@
-package groovy.jsongrpc.constant;
+package groovy.jsonrpc.constant;
 
 public class Constant {
     private Constant() {

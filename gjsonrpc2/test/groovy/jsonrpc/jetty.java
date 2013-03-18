@@ -1,6 +1,6 @@
-package groovy.jsongrpc;
+package groovy.jsonrpc;
 
-import groovy.jsongrpc.tools.RpcServlet;
+import groovy.jsonrpc.tools.RpcServlet;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;

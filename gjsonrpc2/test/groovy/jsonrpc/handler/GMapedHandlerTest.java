@@ -1,16 +1,16 @@
-package groovy.jsongrpc.handler;
+package groovy.jsonrpc.handler;
 
-import static groovy.jsongrpc.engine.RpcRequest.newNotify;
-import static groovy.jsongrpc.engine.RpcRequest.newRequst;
+import static groovy.jsonrpc.engine.RpcRequest.newNotify;
+import static groovy.jsonrpc.engine.RpcRequest.newRequst;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import groovy.jsongrpc.constant.Constant;
-import groovy.jsongrpc.engine.RpcResponse.RpcErrorWithData;
-import groovy.jsongrpc.engine.RpcResponse.RpcRespResult;
-import groovy.jsongrpc.handler.MapedHandler;
+import groovy.jsonrpc.constant.Constant;
+import groovy.jsonrpc.engine.RpcResponse.RpcErrorWithData;
+import groovy.jsonrpc.engine.RpcResponse.RpcRespResult;
+import groovy.jsonrpc.handler.GMapedHandler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,13 +20,13 @@ import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
 
-public class MapedHandlerTest {
-    static final MapedHandler handler = new MapedHandler();
-    static final String JAVACLASS = "javaclass.";
-    static {
-	handler.register(JAVACLASS, TestJava.class.getName(), false);
-    }
+public class GMapedHandlerTest {
+    static final GMapedHandler handler = new GMapedHandler();
+    static final String JAVACLASS = "groovyclass.";
     static final String url = "test/test.groovy";
+    static {
+	handler.register(JAVACLASS, url, true);
+    }
 
     static Object call(String url, Object reqobj, Class<?> clazz) {
 	String req = JSON.toJSONString(reqobj);
@@ -243,5 +243,25 @@ public class MapedHandlerTest {
 	rsp = rspes.get(0);
 	assertNull(rsp.id);
 	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+    }
+
+    @Test
+    public void testCallRpccmd() {
+	String[] cmds = new String[] { "rpc.ls", "rpc.ll", "rpc.all" };
+
+	RpcRespResult rsp = (RpcRespResult) call(
+		url,
+		newRequst(null, "rpc.register", new Object[] { JAVACLASS + "2",
+			url, true }), RpcRespResult.class);
+	assertEquals(Constant.VERSION, rsp.jsonrpc);
+	assertNull(rsp.id);
+	assertNotNull(rsp.result);
+	for (String cmd : cmds) {
+	    rsp = (RpcRespResult) call(url, newRequst(null, cmd),
+		    RpcRespResult.class);
+	    assertEquals(Constant.VERSION, rsp.jsonrpc);
+	    assertNull(rsp.id);
+	    assertNotNull(rsp.result);
+	}
     }
 }

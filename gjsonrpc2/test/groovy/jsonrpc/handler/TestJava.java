@@ -1,6 +1,6 @@
-package groovy.jsongrpc.handler;
+package groovy.jsonrpc.handler;
 
-import groovy.jsongrpc.util.Preconditions;
+import groovy.jsonrpc.util.Preconditions;
 
 import java.util.Date;
 import java.util.List;

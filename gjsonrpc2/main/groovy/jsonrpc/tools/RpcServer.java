@@ -1,6 +1,6 @@
-package groovy.jsongrpc.tools;
+package groovy.jsonrpc.tools;
 
-import groovy.jsongrpc.handler.MapedHandler;
+import groovy.jsonrpc.handler.MapedHandler;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;

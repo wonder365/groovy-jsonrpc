@@ -1,7 +1,7 @@
-package groovy.jsongrpc.tools;
+package groovy.jsonrpc.tools;
 
-import groovy.jsongrpc.handler.UrlHandler;
-import groovy.jsongrpc.util.GroovyLoaders;
+import groovy.jsonrpc.handler.UrlHandler;
+import groovy.jsonrpc.util.GroovyLoaders;
 import groovy.lang.GroovyClassLoader;
 import groovy.servlet.GroovyServlet;
 import groovy.util.GroovyScriptEngine;

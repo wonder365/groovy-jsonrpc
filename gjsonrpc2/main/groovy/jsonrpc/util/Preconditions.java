@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package groovy.jsongrpc.util;
+package groovy.jsonrpc.util;
 
 import java.util.NoSuchElementException;
 

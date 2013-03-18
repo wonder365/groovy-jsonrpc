@@ -1,16 +1,16 @@
-package groovy.jsongrpc.handler;
+package groovy.jsonrpc.handler;
 
-import static groovy.jsongrpc.engine.RpcRequest.newNotify;
-import static groovy.jsongrpc.engine.RpcRequest.newRequst;
+import static groovy.jsonrpc.engine.RpcRequest.newNotify;
+import static groovy.jsonrpc.engine.RpcRequest.newRequst;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import groovy.jsongrpc.constant.Constant;
-import groovy.jsongrpc.engine.RpcResponse.RpcErrorWithData;
-import groovy.jsongrpc.engine.RpcResponse.RpcRespResult;
-import groovy.jsongrpc.handler.GMapedHandler;
+import groovy.jsonrpc.constant.Constant;
+import groovy.jsonrpc.engine.RpcResponse.RpcErrorWithData;
+import groovy.jsonrpc.engine.RpcResponse.RpcRespResult;
+import groovy.jsonrpc.handler.UrlHandler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,13 +20,10 @@ import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
 
-public class GMapedHandlerTest {
-    static final GMapedHandler handler = new GMapedHandler();
-    static final String JAVACLASS = "groovyclass.";
+public class UrlHandlerTest {
+    static final UrlHandler handler = new UrlHandler();
+
     static final String url = "test/test.groovy";
-    static {
-	handler.register(JAVACLASS, url, true);
-    }
 
     static Object call(String url, Object reqobj, Class<?> clazz) {
 	String req = JSON.toJSONString(reqobj);
@@ -57,32 +54,45 @@ public class GMapedHandlerTest {
 
     static String call(String url, String req) {
 	System.out.println(">" + req);
-	String rsp = handler.call(req);
+	String rsp = handler.call(url, req);
 	System.out.println("<" + rsp);
 	return rsp;
+    }
+
+    @Test
+    public void testCallGroovy() {
+	RpcRespResult rsp = (RpcRespResult) call(url,
+		newRequst(null, "add", new int[] { 1, 2 }), RpcRespResult.class);
+	assertNull(rsp.id);
+	assertEquals(3, rsp.result);
+	// 3 parameters
+	rsp = (RpcRespResult) call(url,
+		newRequst(1, "adds", new int[] { 1, 2, 3 }),
+		RpcRespResult.class);
+	assertEquals(1, rsp.id);
+	assertEquals(6, rsp.result);
     }
 
     @Test
     public void testCallArgsCount() {
 	// no parameter
 	RpcRespResult rsp = (RpcRespResult) call(url,
-		newRequst(null, JAVACLASS + "getDate"), RpcRespResult.class);
+		newRequst(null, "getDate"), RpcRespResult.class);
 	assertNull(rsp.id);
 	assertNotNull(rsp.result);
 	// 1 parameter
-	rsp = (RpcRespResult) call(url,
-		newRequst(null, JAVACLASS + "fun1arg", 1), RpcRespResult.class);
+	rsp = (RpcRespResult) call(url, newRequst(null, "fun1arg", 1),
+		RpcRespResult.class);
 	assertNull(rsp.id);
 	assertEquals(2, rsp.result);
 	// 2 parameters
 	rsp = (RpcRespResult) call(url,
-		newRequst(null, JAVACLASS + "add", new int[] { 1, 2 }),
-		RpcRespResult.class);
+		newRequst(null, "add", new int[] { 1, 2 }), RpcRespResult.class);
 	assertNull(rsp.id);
 	assertEquals(3, rsp.result);
 	// 3 parameters
 	rsp = (RpcRespResult) call(url,
-		newRequst(1, JAVACLASS + "adds", new int[] { 1, 2, 3 }),
+		newRequst(1, "adds", new int[] { 1, 2, 3 }),
 		RpcRespResult.class);
 	assertEquals(1, rsp.id);
 	assertEquals(6, rsp.result);
@@ -91,7 +101,7 @@ public class GMapedHandlerTest {
     @Test
     public void testCallAppException() {
 	RpcErrorWithData rsp = (RpcErrorWithData) call(url,
-		newRequst(null, JAVACLASS + "adds", new int[] { 1, 2 }),
+		newRequst(null, "adds", new int[] { 1, 2 }),
 		RpcErrorWithData.class);
 	assertNull(rsp.id);
 	assertEquals(Constant.EC_DEFAULT_APP_ERROR, rsp.code);
@@ -102,7 +112,7 @@ public class GMapedHandlerTest {
     @Test
     public void testCallMethodNotFound() {
 	RpcErrorWithData rsp = (RpcErrorWithData) call(url,
-		newRequst(null, JAVACLASS + "notfound", new int[] { 1, 2 }),
+		newRequst(null, "notfound", new int[] { 1, 2 }),
 		RpcErrorWithData.class);
 	assertNull(rsp.id);
 	assertEquals(Constant.EC_METHOD_NOT_FOUND, rsp.code);
@@ -113,7 +123,7 @@ public class GMapedHandlerTest {
     @Test
     public void testCallMethodParamsError() {
 	RpcErrorWithData rsp = (RpcErrorWithData) call(url,
-		newRequst(null, JAVACLASS + "add", 1), RpcErrorWithData.class);
+		newRequst(null, "add", 1), RpcErrorWithData.class);
 	assertNull(rsp.id);
 	assertEquals(Constant.EC_INVALID_PARAMS, rsp.code);
 	assertNotNull(rsp.message);
@@ -123,8 +133,8 @@ public class GMapedHandlerTest {
     @Test
     public void testCallBatchBase() {
 	Object[] batch = new Object[] {
-		newRequst(null, JAVACLASS + "add", new int[] { 1, 2 }),
-		newRequst(2, JAVACLASS + "adds", new int[] { 1, 2, 3 }) };
+		newRequst(null, "add", new int[] { 1, 2 }),
+		newRequst(2, "adds", new int[] { 1, 2, 3 }) };
 	List<RpcRespResult> rsp = callbatch(url, batch);
 	assertEquals(2, rsp.size());
 	RpcRespResult rsp1 = rsp.get(0);
@@ -138,8 +148,7 @@ public class GMapedHandlerTest {
     @Test
     public void testCallBatchContainsNotify() {
 	Object[] batch = new Object[] {
-		newRequst(1, JAVACLASS + "add", new int[] { 1, 2 }),
-		newNotify(JAVACLASS + "donotify") };
+		newRequst(1, "add", new int[] { 1, 2 }), newNotify("donotify") };
 	List<RpcRespResult> rsp = callbatch(url, batch);
 	assertEquals(1, rsp.size());
 	RpcRespResult rsp1 = rsp.get(0);
@@ -149,8 +158,8 @@ public class GMapedHandlerTest {
 
     @Test
     public void testCallBatchAllNotify() {
-	Object[] batch = new Object[] { newNotify(JAVACLASS + "donotify"),
-		newNotify(JAVACLASS + "notfoundnotify") };
+	Object[] batch = new Object[] { newNotify("donotify"),
+		newNotify("notfoundnotify") };
 	String rsp = call(url, batch);
 	assertEquals("", rsp);
     }
@@ -165,18 +174,44 @@ public class GMapedHandlerTest {
     }
 
     @Test
-    public void testCallAutoConvert() {
-	String rsp = call(url, newNotify(JAVACLASS + "donotify"));
-	assertEquals("", rsp);
-	rsp = call(url, newNotify(JAVACLASS + "echo", new int[] { 1, 2 }));
-	assertEquals("", rsp);
+    public void testCallRpccmd() {
+	String[] cmds = new String[] { "rpc.ls", "rpc.ll", "rpc.all",
+		"rpc.recompile" };
+	for (String cmd : cmds) {
+	    RpcRespResult rsp = (RpcRespResult) call(url, newRequst(null, cmd),
+		    RpcRespResult.class);
+	    assertEquals(Constant.VERSION, rsp.jsonrpc);
+	    assertNull(rsp.id);
+	    assertNotNull(rsp.result);
+	}
+    }
+
+    @Test
+    public void testCallAutoConvertParameter() {
+	// 1 arg
+	RpcRespResult rsp = (RpcRespResult) call(url,
+		newRequst(null, "fun1arg", new int[] { 1 }),
+		RpcRespResult.class);
+	assertEquals(2, rsp.result);
+	rsp = (RpcRespResult) call(url, newRequst(null, "fun1arg", 1),
+		RpcRespResult.class);
+	assertEquals(2, rsp.result);
+	// 1 arg String
+	rsp = (RpcRespResult) call(url,
+		newRequst(null, "fun1argstr", new String[] { "abc" }),
+		RpcRespResult.class);
+	assertEquals("cba", rsp.result);
+	// 2 args
+	rsp = (RpcRespResult) call(url,
+		newRequst(null, "add", new int[] { 1, 2 }), RpcRespResult.class);
+	assertEquals(3, rsp.result);
     }
 
     @Test
     public void testCallNotify() {
-	String rsp = call(url, newNotify(JAVACLASS + "donotify"));
+	String rsp = call(url, newNotify("donotify"));
 	assertEquals("", rsp);
-	rsp = call(url, newNotify(JAVACLASS + "echo", new int[] { 1, 2 }));
+	rsp = call(url, newNotify("echo", new int[] { 1, 2 }));
 	assertEquals("", rsp);
     }
 
@@ -243,25 +278,19 @@ public class GMapedHandlerTest {
 	rsp = rspes.get(0);
 	assertNull(rsp.id);
 	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+	// jsonrpc miss
+	rsp = (RpcErrorWithData) call(url, "{}", RpcErrorWithData.class);
+	assertNull(rsp.id);
+	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+	// method miss
+	rsp = (RpcErrorWithData) call(url, "{jsonrpc:'2.0'}",
+		RpcErrorWithData.class);
+	assertNull(rsp.id);
+	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
     }
 
     @Test
-    public void testCallRpccmd() {
-	String[] cmds = new String[] { "rpc.ls", "rpc.ll", "rpc.all" };
-
-	RpcRespResult rsp = (RpcRespResult) call(
-		url,
-		newRequst(null, "rpc.register", new Object[] { JAVACLASS + "2",
-			url, true }), RpcRespResult.class);
-	assertEquals(Constant.VERSION, rsp.jsonrpc);
-	assertNull(rsp.id);
-	assertNotNull(rsp.result);
-	for (String cmd : cmds) {
-	    rsp = (RpcRespResult) call(url, newRequst(null, cmd),
-		    RpcRespResult.class);
-	    assertEquals(Constant.VERSION, rsp.jsonrpc);
-	    assertNull(rsp.id);
-	    assertNotNull(rsp.result);
-	}
+    public void testRegister() {
+	handler.initbase("test/testbase.groovy", "test/testsub.groovy");
     }
 }

@@ -1,6 +1,6 @@
-package groovy.jsongrpc.tools;
+package groovy.jsonrpc.tools;
 
-import groovy.jsongrpc.handler.MapedHandler;
+import groovy.jsonrpc.handler.MapedHandler;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;

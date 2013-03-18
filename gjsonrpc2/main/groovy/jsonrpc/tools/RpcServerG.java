@@ -1,6 +1,6 @@
-package groovy.jsongrpc.tools;
+package groovy.jsonrpc.tools;
 
-import groovy.jsongrpc.handler.GMapedHandler;
+import groovy.jsonrpc.handler.GMapedHandler;
 
 /**
  * simple NIO JSONRPC server implement based on netty, use it you can

@@ -1,6 +1,6 @@
-package groovy.jsongrpc.handler;
+package groovy.jsonrpc.handler;
 
-import groovy.jsongrpc.util.GroovyLoaders;
+import groovy.jsonrpc.util.GroovyLoaders;
 import groovy.lang.GroovyClassLoader;
 
 import java.io.File;

@@ -1,6 +1,6 @@
-package groovy.jsongrpc.engine;
+package groovy.jsonrpc.engine;
 
-import groovy.jsongrpc.constant.Constant;
+import groovy.jsonrpc.constant.Constant;
 
 import java.util.ArrayList;
 import java.util.List;
