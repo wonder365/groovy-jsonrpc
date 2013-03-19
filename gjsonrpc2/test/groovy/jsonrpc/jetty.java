@@ -18,9 +18,9 @@ public class jetty {
      */
     public static void main(String[] args) throws Exception {
 	Server server = new Server(8080);
-	WebAppContext context = new WebAppContext(".", "/");
+	WebAppContext context = new WebAppContext("web", "/");
 	ServletHolder holder = new ServletHolder(new RpcServlet());
-	holder.setInitParameter("initbase", "test/testbase.groovy;test/testsub.groovy");
+	holder.setInitParameter("initbase", "Util.groovy");
 	context.addServlet(holder, "*.groovy");
 	server.setHandler(context);
 	server.start();

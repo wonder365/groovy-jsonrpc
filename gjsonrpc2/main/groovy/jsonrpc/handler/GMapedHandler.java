@@ -4,7 +4,9 @@ import groovy.jsonrpc.util.GroovyLoaders;
 import groovy.lang.GroovyClassLoader;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +40,16 @@ public class GMapedHandler extends MapedHandler {
     protected boolean registerGroovy(String profix, ClassDef classdef,
 	    String clazzname) {
 	try {
-	    Class<?> clazz = gcl.parseClass(new File(clazzname));
+	    Class<?> clazz = parseClass(clazzname, false);
 	    return registerClass(profix, classdef, clazz);
 	} catch (Exception e) {
 	    return false;
 	}
+    }
+
+    private Class<?> parseClass(String url, boolean cacheable)
+	    throws CompilationFailedException, IOException {
+	return GroovyLoaders.parseClass(gcl, new File(url), cacheable);
     }
 
     /**

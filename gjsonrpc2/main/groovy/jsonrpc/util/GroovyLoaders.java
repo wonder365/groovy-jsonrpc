@@ -1,10 +1,11 @@
 package groovy.jsonrpc.util;
 
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
+import groovy.lang.Script;
+
 import java.io.File;
 import java.io.IOException;
-
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.Script;
 
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -65,5 +66,12 @@ public class GroovyLoaders {
 	for (String s : urls) {
 	    _initbase(cl, s);
 	}
+    }
+
+    public static Class<?> parseClass(GroovyClassLoader cl, File file,
+	    boolean cacheable) throws CompilationFailedException, IOException {
+	GroovyCodeSource gcs = new GroovyCodeSource(file, "UTF-8");
+	gcs.setCachable(cacheable);
+	return cl.parseClass(gcs);
     }
 }

@@ -8,12 +8,14 @@ import groovy.jsonrpc.util.GroovyLoaders;
 import groovy.lang.GroovyClassLoader;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +128,7 @@ public class UrlHandler {
 	    Class<?> clazz = null;
 	    Exception compilefail = null;
 	    try {
-		clazz = cl.parseClass(new File(ccl.url));
+		clazz = parseClass(url, false);
 	    } catch (Exception e) {
 		compilefail = e;
 	    }
@@ -134,11 +136,16 @@ public class UrlHandler {
 	    return compilefail == null;
 	}
 
+	private Class<?> parseClass(String url, boolean cacheable)
+		throws CompilationFailedException, IOException {
+	    return GroovyLoaders.parseClass(cl, new File(url), cacheable);
+	}
+
 	private CompiledClass compile(final String url) {
 	    Class<?> clazz = null;
 	    Exception compilefail = null;
 	    try {
-		clazz = cl.parseClass(new File(url));
+		clazz = parseClass(url, false);
 	    } catch (Exception e) {
 		compilefail = e;
 	    }
