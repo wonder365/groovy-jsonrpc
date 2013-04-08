@@ -12,7 +12,6 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class RpcServerHandler extends SimpleChannelUpstreamHandler {
     static final Logger logger = LoggerFactory
 	    .getLogger(RpcServerHandler.class);
@@ -29,8 +28,10 @@ public class RpcServerHandler extends SimpleChannelUpstreamHandler {
 	    throws Exception {
 	byte[] data = ((ChannelBuffer) e.getMessage()).array();
 	byte[] rsp = mhandler.call(data);
-	ChannelBuffer buf = ChannelBuffers.copiedBuffer(rsp, dlm);
-	e.getChannel().write(buf);
+	if (rsp.length > 0) {
+	    ChannelBuffer buf = ChannelBuffers.copiedBuffer(rsp, dlm);
+	    e.getChannel().write(buf);
+	}
     }
 
     @Override

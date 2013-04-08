@@ -12,15 +12,20 @@ import groovy.jsonrpc.engine.RpcResponse.RpcErrorWithData;
 import groovy.jsonrpc.engine.RpcResponse.RpcRespResult;
 import groovy.jsonrpc.handler.GMapedHandler;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 
 public class GMapedHandlerTest {
+    static final Logger logger = LoggerFactory
+	    .getLogger(GMapedHandlerTest.class);
     static final GMapedHandler handler = new GMapedHandler();
     static final String JAVACLASS = "groovyclass.";
     static final String url = "test/test.groovy";
@@ -56,9 +61,9 @@ public class GMapedHandlerTest {
     }
 
     static String call(String url, String req) {
-	System.out.println(">" + req);
+	logger.debug(">url[{}] req[{}]", req);
 	String rsp = handler.call(req);
-	System.out.println("<" + rsp);
+	logger.debug("<{}", rsp);
 	return rsp;
     }
 

@@ -6,7 +6,9 @@ import groovy.lang.GroovyClassLoader;
 import groovy.servlet.GroovyServlet;
 import groovy.util.GroovyScriptEngine;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -30,6 +32,7 @@ public class RpcServlet extends GroovyServlet {
     private static final long serialVersionUID = 5121241986847167685L;
     private GroovyClassLoader cl;
     private UrlHandler hl;
+    String basepath = "";
 
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response)
@@ -46,6 +49,7 @@ public class RpcServlet extends GroovyServlet {
 	    HttpServletResponse response) throws IOException {
 	String uri = getScriptUri(request);
 	String url = servletContext.getRealPath(uri);
+	logger.debug("callrpc: uri {}", uri);
 	byte[] reqdata = IOGroovyMethods.getBytes(request.getInputStream());
 	byte[] resdata = hl.call(url, reqdata);
 	if (resdata != null) {
@@ -60,6 +64,7 @@ public class RpcServlet extends GroovyServlet {
 	super.init(config);
 	String value = config.getInitParameter("initbase");
 	initbase(value);
+	this.basepath = servletContext.getRealPath("/");
     }
 
     /**

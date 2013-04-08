@@ -293,4 +293,12 @@ public class UrlHandlerTest {
     public void testRegister() {
 	handler.initbase("test/testbase.groovy", "test/testsub.groovy");
     }
+
+    @Test
+    public void testFailUrl() {
+	RpcErrorWithData rsp = (RpcErrorWithData) call("failurl",
+		newRequst(1, "rpc.ls"), RpcErrorWithData.class);
+	assertEquals(1, rsp.getId());
+	assertEquals(Constant.EC_INTERNAL_ERROR, rsp.code);
+    }
 }

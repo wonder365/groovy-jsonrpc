@@ -100,6 +100,10 @@ public class UrlHandler {
 	}
 
 	protected RpcResponse _beforeInvoke(Object id) {
+	    if (ccl == null) {
+		return RpcResponse.newError(id, Constant.EC_INTERNAL_ERROR,
+			"rpc: compile fail url is null");
+	    }
 	    if (!ccl.isok) {
 		return RpcResponse.newError(id, Constant.EC_INTERNAL_ERROR,
 			"rpc: compile fail " + ccl.failmsg);
@@ -154,6 +158,8 @@ public class UrlHandler {
 	}
 
 	private CompiledClass getCompiledClass() {
+	    if (url == null)
+		return null;
 	    if (!classes.containsKey(url)) {
 		CompiledClass ccl = compile(url);
 		classes.put(url, ccl);
