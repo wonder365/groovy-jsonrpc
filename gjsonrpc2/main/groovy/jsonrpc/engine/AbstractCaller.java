@@ -135,15 +135,15 @@ public abstract class AbstractCaller {
      * @return response object ( notify will return a response too )
      */
     private RpcResponse callone(JSONObject jo, Object id) {
+	RpcResponse resp1 = _beforeInvoke(id);
+	if (resp1 != null)
+	    return resp1;
+
 	String methodname = jo.getString(Constant.FIELD_METHOD);
 
 	if (methodname.startsWith("rpc.")) {
 	    return _callrpc(methodname, id, jo);
 	}
-
-	RpcResponse resp1 = _beforeInvoke(id);
-	if (resp1 != null)
-	    return resp1;
 
 	RpcResponse resp = MethodDefefine.callmethod(_getMethods(), methodname,
 		id, jo);
