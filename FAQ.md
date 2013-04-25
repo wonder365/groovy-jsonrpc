@@ -15,8 +15,15 @@
 	* Write and compile a java class straight, OR
 	* Pass "initbase" parameter to RpcServlet, "initbase" is the script urls to be loaded (seperated by ";"). the RpcServelt will load and run them one by one. You can start databse, initialize DB pool, or anything you want. Now use RpcServlet you can write a web application purely in groovy.
 	* "initbase" is avaliable to GMapedHandler, so You may init a RpcServerG too.
+1. What groovy-jsonrpc depends
+	* jvm
+	* [slf4j][slf4j] (for logging), [fast-json][fast-json] (for processing JSON)
+	* groovy ( if need groovy support )
+	* servlet-api-*.jar (if use RpcServlet)
+	* netty (RpcServer needs this to implement NIO socket)
 1. I want ...
 	* RpcServlet/RpcServer are demo tools, you may create you own use groovy.jsonrpc.handler.
 
 [fast-json]: http://code.alibabatech.com/wiki/display/FastJSON/Documentation "Fast JSON Processor"
 [gs]: http://groovy.codehaus.org/Groovlets "Groovlets"
+[slf4j]: http://www.slf4j.org/ "Simple Logging Facade for Java"
