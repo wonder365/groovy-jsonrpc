@@ -1,11 +1,18 @@
 package groovy.jsonrpc.engine;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import groovy.jsonrpc.constant.Constant;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.annotation.JSONType;
+import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.util.TypeUtils;
 
 /**
  * JSONRPC response object defines
@@ -16,7 +23,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
  */
 @JSONType(orders = { "jsonrpc", "id" })
 public class RpcResponse {
-    public final String jsonrpc = Constant.VERSION;
+    public String jsonrpc = Constant.VERSION;
     @JSONField(serialzeFeatures = { SerializerFeature.WriteMapNullValue })
     public Object id;
 
@@ -33,21 +40,23 @@ public class RpcResponse {
     }
 
     public static RpcResponse newError(Object id, int code, String message) {
-	RpcResponse.RpcError error = new RpcError();
+	RpcRespError resp = new RpcRespError();
+	resp.id = id;
+	RpcResponse.RpcError error = resp.error;
 	error.code = code;
 	error.message = message;
-	error.id = id;
-	return error;
+	return resp;
     }
 
     public static RpcResponse newError(Object id, int code, String message,
 	    Object data) {
-	RpcResponse.RpcErrorWithData error = new RpcErrorWithData();
+	RpcRespError resp = new RpcRespError();
+	resp.id = id;
+	RpcResponse.RpcError error = resp.error;
 	error.code = code;
 	error.message = message;
-	error.id = id;
 	error.data = data;
-	return error;
+	return resp;
     }
 
     @JSONType(orders = { "jsonrpc", "id", "result" })
@@ -64,10 +73,19 @@ public class RpcResponse {
 	}
     }
 
-    @JSONType(orders = { "jsonrpc", "id", "code", "message" })
-    public static class RpcError extends RpcResponse {
+    @JSONType(orders = { "code", "message", "data" })
+    public static class RpcError {
 	public int code;
 	public String message;
+	public Object data;
+
+	public Object getData() {
+	    return data;
+	}
+
+	public void setData(Object data) {
+	    this.data = data;
+	}
 
 	public int getCode() {
 	    return code;
@@ -86,29 +104,27 @@ public class RpcResponse {
 	}
     }
 
-    @JSONType(orders = { "jsonrpc", "id", "code", "message", "data" })
-    public static class RpcErrorWithData extends RpcResponse.RpcError {
-	public Object data;
-
-	public Object getData() {
-	    return data;
-	}
-
-	public void setData(Object data) {
-	    this.data = data;
-	}
-    }
-
     @JSONType(orders = { "jsonrpc", "id", "error" })
     public static class RpcRespError extends RpcResponse {
-	public Object error;
+	public RpcError error = new RpcError();
 
-	public Object getError() {
+	public RpcError getError() {
 	    return error;
 	}
 
-	public void setError(Object error) {
+	public void setError(RpcError error) {
 	    this.error = error;
+	}
+
+	public RpcException toException() {
+	    RpcException exception = new RpcException();
+	    exception.id = id;
+	    if (error != null) {
+		exception.code = error.code;
+		exception.data = error.data;
+		exception.message = error.message;
+	    }
+	    return exception;
 	}
     }
 
@@ -131,5 +147,63 @@ public class RpcResponse {
     @Override
     public String toString() {
 	return JSON.toJSONString(this);
+    }
+
+    public String getJsonrpc() {
+	return jsonrpc;
+    }
+
+    public void setJsonrpc(String jsonrpc) {
+	this.jsonrpc = jsonrpc;
+    }
+
+    public static List<RpcResponse> builds(byte[] resdata) {
+	List<RpcResponse> resps = new ArrayList<RpcResponse>();
+	if (resdata.length == 0) {
+	    return resps;
+	}
+	Object json = JSON.parse(resdata);
+
+	if (json instanceof JSONArray) {
+	    JSONArray objs = (JSONArray) json;
+	    for (Object obj : objs) {
+		if (obj instanceof JSONObject) {
+		    RpcResponse rpcret = genRpcResp((JSONObject) obj);
+		    if (rpcret != null) {
+			resps.add(rpcret);
+		    }
+		}
+	    }
+	}
+	return resps;
+    }
+
+    public static RpcResponse build(byte[] resdata) {
+	if (resdata.length == 0) {
+	    return null;
+	}
+	Object json = JSON.parse(resdata);
+
+	if (!(json instanceof JSONObject)) {
+	    return null;
+	}
+	JSONObject obj = (JSONObject) json;
+	return genRpcResp(obj);
+    }
+
+    private static RpcResponse genRpcResp(JSONObject obj) {
+	RpcResponse rpcret = new RpcResponse();
+	if (obj.containsKey("result")) {
+	    rpcret = TypeUtils.cast(obj, RpcRespResult.class,
+		    ParserConfig.getGlobalInstance());
+	    rpcret.id = obj.get("id");
+	} else if (obj.containsKey("error")) {
+	    rpcret = TypeUtils.cast(obj, RpcRespError.class,
+		    ParserConfig.getGlobalInstance());
+	    rpcret.id = obj.get("id");
+	} else {
+	    throw new IllegalArgumentException("not valid RpcResponse");
+	}
+	return rpcret;
     }
 }

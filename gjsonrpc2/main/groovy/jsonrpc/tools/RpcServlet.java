@@ -1,22 +1,26 @@
 package groovy.jsonrpc.tools;
 
+import groovy.jsonrpc.constant.Constant;
 import groovy.jsonrpc.handler.UrlHandler;
 import groovy.jsonrpc.util.GroovyLoaders;
 import groovy.lang.GroovyClassLoader;
 import groovy.servlet.GroovyServlet;
 import groovy.util.GroovyScriptEngine;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +42,7 @@ public class RpcServlet extends GroovyServlet {
     public void service(HttpServletRequest request, HttpServletResponse response)
 	    throws IOException {
 	String ctxtype = request.getContentType();
-	if (ctxtype != null && ctxtype.contains("json")) {
+	if (ctxtype != null && ctxtype.contains(Constant.JSON)) {
 	    serviceRpc(request, response);
 	} else {
 	    super.service(request, response);
@@ -49,13 +53,38 @@ public class RpcServlet extends GroovyServlet {
 	    HttpServletResponse response) throws IOException {
 	String uri = getScriptUri(request);
 	String url = servletContext.getRealPath(uri);
-	logger.debug("callrpc: uri {}", uri);
-	byte[] reqdata = IOGroovyMethods.getBytes(request.getInputStream());
+
+	String cen = request.getHeader(Constant.CONTENT_ENCODING);
+	boolean isgzip = (cen != null) && (cen.indexOf(Constant.GZIP) != -1);
+	String ae = request.getHeader(Constant.ACCEPT_ENCODING);
+	boolean isae = (ae != null && ae.indexOf(Constant.GZIP) != -1);
+
+	if (logger.isDebugEnabled()) {
+	    String ip = getIpAddr(request);
+	    int contentlen = request.getContentLength();
+	    logger.debug("rpc from ip:{}, contentlen:{}", ip, contentlen);
+	}
+
+	ServletInputStream ism = request.getInputStream();
+	byte[] reqdata = getBytes(isgzip ? new GZIPInputStream(ism) : ism);
+	if (logger.isTraceEnabled()) {
+	    logger.trace("reqdata: {}", new String(reqdata, "UTF-8"));
+	}
 	byte[] resdata = hl.call(url, reqdata);
 	if (resdata != null) {
-	    response.setContentType("application/json; charset=utf8");
-	    ServletOutputStream stream = response.getOutputStream();
-	    stream.write(resdata);
+	    if (logger.isTraceEnabled()) {
+		logger.trace("resdata: {}", new String(resdata, "UTF-8"));
+	    }
+	    OutputStream stream = response.getOutputStream();
+	    response.setContentType(Constant.DEFAULT_CONTENT_TYPE);
+	    if (isae && (resdata.length > Constant.MIN_GZIP_LEN)) {
+		response.addHeader(Constant.CONTENT_ENCODING, Constant.GZIP);
+		GZIPOutputStream st = new GZIPOutputStream(stream);
+		st.write(resdata);
+		st.finish();
+	    } else {
+		stream.write(resdata);
+	    }
 	}
     }
 
@@ -65,6 +94,20 @@ public class RpcServlet extends GroovyServlet {
 	String value = config.getInitParameter("initbase");
 	initbase(value);
 	this.basepath = servletContext.getRealPath("/");
+    }
+
+    public static String getIpAddr(HttpServletRequest request) {
+	String ip = request.getHeader("x-forwarded-for");
+	if (ip == null || ip.length() == 0 || " unknown ".equalsIgnoreCase(ip)) {
+	    ip = request.getHeader("Proxy-Client-IP");
+	}
+	if (ip == null || ip.length() == 0 || " unknown ".equalsIgnoreCase(ip)) {
+	    ip = request.getHeader("WL-Proxy-Client-IP");
+	}
+	if (ip == null || ip.length() == 0 || " unknown ".equalsIgnoreCase(ip)) {
+	    ip = request.getRemoteAddr();
+	}
+	return ip;
     }
 
     /**
@@ -91,5 +134,31 @@ public class RpcServlet extends GroovyServlet {
 	this.cl = GroovyLoaders.createGroovyClassLoader();
 	this.hl = new UrlHandler(this.cl);
 	return new GroovyScriptEngine(this, this.cl);
+    }
+
+    public static byte[] getBytes(InputStream is) throws IOException {
+	ByteArrayOutputStream answer = new ByteArrayOutputStream();
+	// reading the content of the file within a byte buffer
+	byte[] byteBuffer = new byte[8192];
+	int nbByteRead /* = 0 */;
+	try {
+	    while ((nbByteRead = is.read(byteBuffer)) != -1) {
+		// appends buffer
+		answer.write(byteBuffer, 0, nbByteRead);
+	    }
+	} finally {
+	    closeWithWarning(is);
+	}
+	return answer.toByteArray();
+    }
+
+    public static void closeWithWarning(Closeable c) {
+	if (c != null) {
+	    try {
+		c.close();
+	    } catch (IOException e) {
+		logger.warn("Caught exception during close(): ", e);
+	    }
+	}
     }
 }

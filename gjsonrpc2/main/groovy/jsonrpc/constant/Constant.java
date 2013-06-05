@@ -1,6 +1,7 @@
 package groovy.jsonrpc.constant;
 
 public class Constant {
+
     private Constant() {
     }
 
@@ -26,4 +27,12 @@ public class Constant {
     public static final byte[] EMPTY_BYTES = new byte[] {};
     public static final String EMPTY_STRING = "";
     public static final String USER_PACKAGE = "jsonrpc.dynamic";
+
+    // HTTP HEADERS
+    public static final String JSON = "json";
+    public static final String DEFAULT_CONTENT_TYPE = "application/json; charset=utf8";
+    public static final int MIN_GZIP_LEN = 256;
+    public static final String GZIP = "gzip";
+    public static final String ACCEPT_ENCODING = "accept-encoding";
+    public static final String CONTENT_ENCODING = "Content-Encoding";
 }

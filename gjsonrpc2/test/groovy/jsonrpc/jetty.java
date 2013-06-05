@@ -3,7 +3,6 @@ package groovy.jsonrpc;
 import groovy.jsonrpc.tools.RpcServlet;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 

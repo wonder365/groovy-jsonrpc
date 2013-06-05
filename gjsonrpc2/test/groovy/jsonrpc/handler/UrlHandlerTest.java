@@ -8,7 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import groovy.jsonrpc.constant.Constant;
-import groovy.jsonrpc.engine.RpcResponse.RpcErrorWithData;
+import groovy.jsonrpc.engine.RpcResponse.RpcRespError;
 import groovy.jsonrpc.engine.RpcResponse.RpcRespResult;
 import groovy.jsonrpc.handler.UrlHandler;
 
@@ -47,9 +47,9 @@ public class UrlHandlerTest {
 	return JSON.parseArray(rsp, RpcRespResult.class);
     }
 
-    static List<RpcErrorWithData> callbatcherrors(String url, String req) {
+    static List<RpcRespError> callbatcherrors(String url, String req) {
 	String rsp = call(url, req);
-	return JSON.parseArray(rsp, RpcErrorWithData.class);
+	return JSON.parseArray(rsp, RpcRespError.class);
     }
 
     static String call(String url, String req) {
@@ -100,34 +100,33 @@ public class UrlHandlerTest {
 
     @Test
     public void testCallAppException() {
-	RpcErrorWithData rsp = (RpcErrorWithData) call(url,
-		newRequst(null, "adds", new int[] { 1, 2 }),
-		RpcErrorWithData.class);
+	RpcRespError rsp = (RpcRespError) call(url,
+		newRequst(null, "adds", new int[] { 1, 2 }), RpcRespError.class);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_DEFAULT_APP_ERROR, rsp.code);
-	assertNotNull(rsp.message);
-	assertNotNull(rsp.data);
+	assertEquals(Constant.EC_DEFAULT_APP_ERROR, rsp.error.code);
+	assertNotNull(rsp.error.message);
+	assertNotNull(rsp.error.data);
     }
 
     @Test
     public void testCallMethodNotFound() {
-	RpcErrorWithData rsp = (RpcErrorWithData) call(url,
+	RpcRespError rsp = (RpcRespError) call(url,
 		newRequst(null, "notfound", new int[] { 1, 2 }),
-		RpcErrorWithData.class);
+		RpcRespError.class);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_METHOD_NOT_FOUND, rsp.code);
-	assertNotNull(rsp.message);
-	assertNull(rsp.data);
+	assertEquals(Constant.EC_METHOD_NOT_FOUND, rsp.error.code);
+	assertNotNull(rsp.error.message);
+	assertNull(rsp.error.data);
     }
 
     @Test
     public void testCallMethodParamsError() {
-	RpcErrorWithData rsp = (RpcErrorWithData) call(url,
-		newRequst(null, "add", 1), RpcErrorWithData.class);
+	RpcRespError rsp = (RpcRespError) call(url, newRequst(null, "add", 1),
+		RpcRespError.class);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_INVALID_PARAMS, rsp.code);
-	assertNotNull(rsp.message);
-	assertNotNull(rsp.data);
+	assertEquals(Constant.EC_INVALID_PARAMS, rsp.error.code);
+	assertNotNull(rsp.error.message);
+	assertNotNull(rsp.error.data);
     }
 
     @Test
@@ -251,42 +250,40 @@ public class UrlHandlerTest {
     @Test
     public void testCallInValid() {
 	// parse error
-	RpcErrorWithData rsp = (RpcErrorWithData) call(url, "[",
-		RpcErrorWithData.class);
+	RpcRespError rsp = (RpcRespError) call(url, "[", RpcRespError.class);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_PARSE_ERROR, rsp.code);
+	assertEquals(Constant.EC_PARSE_ERROR, rsp.error.code);
 	// parse error, not terminated batch
-	rsp = (RpcErrorWithData) call(
+	rsp = (RpcRespError) call(
 		url,
 		"[ {'jsonrpc': '2.0', 'method': 'sum'},  {'jsonrpc': '2.0', 'method']",
-		RpcErrorWithData.class);
+		RpcRespError.class);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_PARSE_ERROR, rsp.code);
+	assertEquals(Constant.EC_PARSE_ERROR, rsp.error.code);
 	// empty batch
-	rsp = (RpcErrorWithData) call(url, "[]", RpcErrorWithData.class);
+	rsp = (RpcRespError) call(url, "[]", RpcRespError.class);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+	assertEquals(Constant.EC_INVALID_REQUEST, rsp.error.code);
 	// rpc call with an invalid Batch (but not empty)
-	List<RpcErrorWithData> rspes = callbatcherrors(url, "[1]");
+	List<RpcRespError> rspes = callbatcherrors(url, "[1]");
 	assertEquals(1, rspes.size());
 	rsp = rspes.get(0);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+	assertEquals(Constant.EC_INVALID_REQUEST, rsp.error.code);
 	// rpc call with invalid Batchs
 	rspes = callbatcherrors(url, "[1, 2, 3]");
 	assertEquals(3, rspes.size());
 	rsp = rspes.get(0);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+	assertEquals(Constant.EC_INVALID_REQUEST, rsp.error.code);
 	// jsonrpc miss
-	rsp = (RpcErrorWithData) call(url, "{}", RpcErrorWithData.class);
+	rsp = (RpcRespError) call(url, "{}", RpcRespError.class);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+	assertEquals(Constant.EC_INVALID_REQUEST, rsp.error.code);
 	// method miss
-	rsp = (RpcErrorWithData) call(url, "{jsonrpc:'2.0'}",
-		RpcErrorWithData.class);
+	rsp = (RpcRespError) call(url, "{jsonrpc:'2.0'}", RpcRespError.class);
 	assertNull(rsp.id);
-	assertEquals(Constant.EC_INVALID_REQUEST, rsp.code);
+	assertEquals(Constant.EC_INVALID_REQUEST, rsp.error.code);
     }
 
     @Test
@@ -296,9 +293,9 @@ public class UrlHandlerTest {
 
     @Test
     public void testFailUrl() {
-	RpcErrorWithData rsp = (RpcErrorWithData) call("failurl",
-		newRequst(1, "rpc.ls"), RpcErrorWithData.class);
+	RpcRespError rsp = (RpcRespError) call("failurl",
+		newRequst(1, "rpc.ls"), RpcRespError.class);
 	assertEquals(1, rsp.getId());
-	assertEquals(Constant.EC_INTERNAL_ERROR, rsp.code);
+	assertEquals(Constant.EC_INTERNAL_ERROR, rsp.error.code);
     }
 }
