@@ -12,6 +12,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetDecoder;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -23,6 +26,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.alibaba.fastjson.util.IOUtils;
+import com.alibaba.fastjson.util.ThreadLocalCache;
 
 /**
  * the GroovyServlet supports JSONRPC, when requst.ContentType contains "json",
@@ -68,12 +74,16 @@ public class RpcServlet extends GroovyServlet {
 	ServletInputStream ism = request.getInputStream();
 	byte[] reqdata = getBytes(isgzip ? new GZIPInputStream(ism) : ism);
 	if (logger.isTraceEnabled()) {
-	    logger.trace("reqdata: {}", new String(reqdata, "UTF-8"));
+	    logger.trace("reqdata: {}", convertBytesToBuf(reqdata));
 	}
 	byte[] resdata = hl.call(url, reqdata);
+	if (logger.isDebugEnabled()) {
+	    int resplen = resdata == null ? 0 : resdata.length;
+	    logger.debug("response datalen(before gzip): {}", resplen);
+	}
 	if (resdata != null) {
 	    if (logger.isTraceEnabled()) {
-		logger.trace("resdata: {}", new String(resdata, "UTF-8"));
+		logger.trace("resdata: {}", convertBytesToBuf(resdata));
 	    }
 	    OutputStream stream = response.getOutputStream();
 	    response.setContentType(Constant.DEFAULT_CONTENT_TYPE);
@@ -108,6 +118,22 @@ public class RpcServlet extends GroovyServlet {
 	    ip = request.getRemoteAddr();
 	}
 	return ip;
+    }
+
+    public static CharBuffer convertBytesToBuf(byte[] input) {
+	CharsetDecoder charsetDecoder = ThreadLocalCache.getUTF8Decoder();
+	charsetDecoder.reset();
+	int len = input.length;
+	int off = 0;
+	int scaleLength = (int) (len * (double) charsetDecoder
+		.maxCharsPerByte());
+	char[] chars = ThreadLocalCache.getChars(scaleLength);
+
+	ByteBuffer byteBuf = ByteBuffer.wrap(input, off, len);
+	CharBuffer charBuf = CharBuffer.wrap(chars);
+	IOUtils.decode(charsetDecoder, byteBuf, charBuf);
+	charBuf.flip();
+	return charBuf;
     }
 
     /**
