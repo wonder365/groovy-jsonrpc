@@ -30,9 +30,9 @@ public class Constant {
 
     // HTTP HEADERS
     public static final String JSON = "json";
-    public static final String DEFAULT_CONTENT_TYPE = "application/json; charset=utf8";
+    public static final String DEFAULT_CONTENT_TYPE = "application/json; charset=UTF-8";
     public static final int MIN_GZIP_LEN = 256;
     public static final String GZIP = "gzip";
-    public static final String ACCEPT_ENCODING = "accept-encoding";
+    public static final String ACCEPT_ENCODING = "Accept-Encoding";
     public static final String CONTENT_ENCODING = "Content-Encoding";
 }
