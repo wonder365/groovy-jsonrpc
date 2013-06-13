@@ -228,6 +228,14 @@ public class RpcServletClientTest {
 	try {
 	    Object ret = client.call("rpc.ls");
 	    assertTrue(ret instanceof List);
+	    ret = client.call("adds", 1, 2, 3);
+	    assertEquals(6, ret);
+	    ret = client.call("echo", 1, 2, 3);
+	    assertTrue(ret instanceof List);
+	    List<Integer> aret = (List<Integer>) ret;
+	    assertTrue(ret instanceof List);
+	    assertEquals(3, aret.size());
+	    assertEquals(3, (int)aret.get(2));
 	    ret = client.call("rpc.lsx");
 	} catch (RpcException e) {
 	    logger.error("fail: ", e);
@@ -251,4 +259,19 @@ public class RpcServletClientTest {
 		newRequst("2", "rpc.ls"), fails);
 	logger.debug("rets: {}", rets);
     }
+
+    @Test
+    public void testZ() throws MalformedURLException {
+	try {
+	    RpcServletClient client1 = new RpcServletClient(
+		    "http://172.16.36.70/multilevel/static/level/level.groovy");
+	    Object ret = client1.call("getResHis",
+		    "0d886f10-b659-3071-9639-0e400e44885b", "CPURate", "1d");
+	    logger.debug("ret {}", ret);
+	} catch (RpcException e) {
+	    logger.error("fail: ", e);
+	    assertEquals(Constant.EC_METHOD_NOT_FOUND, e.getCode());
+	}
+    }
+
 }

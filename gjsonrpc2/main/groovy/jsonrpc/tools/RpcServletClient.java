@@ -91,6 +91,11 @@ public class RpcServletClient extends RESTClient {
 	return null;
     }
 
+    public Object methodMissing(String name, Object args) throws RpcException {
+	Object[] argss = (Object[]) args;
+	return (argss.length == 0) ? call(name) : call(name, args);
+    }
+
     public void notify(String method, Object... params) throws RpcException {
 	RpcRequest req;
 	if (params.length == 0) {
